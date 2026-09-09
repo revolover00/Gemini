@@ -83,3 +83,20 @@ export const register = async (
     return { status: "failed" };
   }
 };
+
+export const loginAsGuest = async (): Promise<{ status: "success" | "failed" }> => {
+  try {
+    await signIn("credentials", {
+      isGuest: "true",
+      redirect: false,
+    });
+
+    return { status: "success" };
+  } catch (error: any) {
+    if (error?.message?.includes?.("NEXT_REDIRECT")) {
+      throw error;
+    }
+    console.error("Guest login failed:", error);
+    return { status: "failed" };
+  }
+};

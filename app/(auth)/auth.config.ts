@@ -1,6 +1,9 @@
 import { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
+  secret:
+    process.env.AUTH_SECRET ||
+    "ai-studio-auth-secret-development-key-32chars",
   pages: {
     signIn: "/login",
     newUser: "/",

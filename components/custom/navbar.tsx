@@ -45,7 +45,9 @@ export const Navbar = async () => {
                 className="py-1.5 px-2 h-fit font-normal"
                 variant="secondary"
               >
-                {session.user?.email}
+                {session.user?.email?.startsWith("guest_")
+                  ? "Guest (ضيف)"
+                  : session.user?.email}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

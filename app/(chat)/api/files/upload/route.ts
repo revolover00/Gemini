@@ -51,15 +51,28 @@ export async function POST(request: Request) {
     const filename = file.name;
     const fileBuffer = await file.arrayBuffer();
 
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const data = await put(`${filename}`, fileBuffer, {
+          access: "public",
+        });
 
-      return NextResponse.json(data);
-    } catch (error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+        return NextResponse.json(data);
+      } catch (error) {
+        console.warn("Vercel blob upload failed, falling back to data URL:", error);
+      }
     }
+
+    // In-memory / Data URL fallback
+    const base64 = Buffer.from(fileBuffer).toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64}`;
+
+    return NextResponse.json({
+      url: dataUrl,
+      downloadUrl: dataUrl,
+      pathname: filename,
+      contentType: file.type,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to process request" },

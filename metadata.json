@@ -1,0 +1,6 @@
+{
+  "name": "Gemini Flight Chatbot",
+  "description": "Next.js flight booking chatbot powered by Gemini and the Vercel AI SDK.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
