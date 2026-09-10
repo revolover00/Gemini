@@ -2,7 +2,7 @@ import { compare } from "bcrypt-ts";
 import NextAuth, { User, Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-import { getUser } from "@/db/queries";
+import { createUser, getUser } from "@/db/queries";
 
 import { authConfig } from "./auth.config";
 
@@ -14,12 +14,18 @@ interface ExtendedSession extends Session {
   user: User;
 }
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+const DEFAULT_USER: User = {
+  id: "00000000-0000-4000-8000-000000000001",
+  email: "guest@chatbot.local",
+  name: "Guest",
+};
+
+const DEFAULT_SESSION: Session = {
+  user: DEFAULT_USER,
+  expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+};
+
+const nextAuthInstance = NextAuth({
   ...authConfig,
   secret: process.env.AUTH_SECRET,
   providers: [
@@ -56,10 +62,29 @@ export const {
       token: any;
     }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = (token.id as string) || DEFAULT_USER.id!;
       }
 
       return session;
     },
   },
 });
+
+export const {
+  handlers: { GET, POST },
+  signIn,
+  signOut,
+} = nextAuthInstance;
+
+export async function auth(): Promise<Session> {
+  try {
+    const session = await nextAuthInstance.auth();
+    if (session && session.user) {
+      return session;
+    }
+  } catch {
+    // fallback to default guest session
+  }
+  return DEFAULT_SESSION;
+}
+

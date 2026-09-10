@@ -257,12 +257,17 @@ export async function getReservationById({ id }: { id: string }) {
         .from(reservation)
         .where(eq(reservation.id, id));
       if (selectedReservation) {
+        let details = selectedReservation.details;
+        if (typeof details === "string") {
+          try {
+            details = JSON.parse(details);
+          } catch {
+            details = {};
+          }
+        }
         return {
           ...selectedReservation,
-          details:
-            typeof selectedReservation.details === "string"
-              ? JSON.parse(selectedReservation.details)
-              : selectedReservation.details,
+          details,
         };
       }
     } catch (error) {

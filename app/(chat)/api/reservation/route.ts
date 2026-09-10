@@ -6,27 +6,32 @@ export async function GET(request: Request) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return new Response("Not Found!", { status: 404 });
+    return Response.json({ error: "Not Found" }, { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response("Unauthorized!", { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const reservation = await getReservationById({ id });
 
+    if (!reservation) {
+      return Response.json({ error: "Reservation not found" }, { status: 404 });
+    }
+
     if (reservation.userId !== session.user.id) {
-      return new Response("Unauthorized!", { status: 401 });
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     return Response.json(reservation);
   } catch (error) {
-    return new Response("An error occurred while processing your request!", {
-      status: 500,
-    });
+    return Response.json(
+      { error: "An error occurred while processing your request" },
+      { status: 500 },
+    );
   }
 }
 
@@ -35,34 +40,41 @@ export async function PATCH(request: Request) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return new Response("Not Found!", { status: 404 });
+    return Response.json({ error: "Not Found" }, { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response("Unauthorized!", { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const reservation = await getReservationById({ id });
 
     if (!reservation) {
-      return new Response("Reservation not found!", { status: 404 });
+      return Response.json({ error: "Reservation not found" }, { status: 404 });
     }
 
     if (reservation.userId !== session.user.id) {
-      return new Response("Unauthorized!", { status: 401 });
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (reservation.hasCompletedPayment) {
-      return new Response("Reservation is already paid!", { status: 409 });
+      return Response.json({ error: "Reservation is already paid" }, { status: 409 });
     }
 
-    const { magicWord } = await request.json();
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    if (magicWord.toLowerCase() !== "vercel") {
-      return new Response("Invalid magic word!", { status: 400 });
+    const { magicWord } = body;
+
+    if (!magicWord || typeof magicWord !== "string" || magicWord.toLowerCase() !== "vercel") {
+      return Response.json({ error: "Invalid magic word!" }, { status: 400 });
     }
 
     const updatedReservation = await updateReservation({
@@ -72,8 +84,9 @@ export async function PATCH(request: Request) {
     return Response.json(updatedReservation);
   } catch (error) {
     console.error("Error updating reservation:", error);
-    return new Response("An error occurred while processing your request!", {
-      status: 500,
-    });
+    return Response.json(
+      { error: "An error occurred while processing your request" },
+      { status: 500 },
+    );
   }
 }

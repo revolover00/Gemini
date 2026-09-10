@@ -44,7 +44,7 @@ import {
   SheetTitle,
 } from "../ui/sheet";
 
-export const History = ({ user }: { user: User | undefined }) => {
+export const History = ({ user }: { user?: User | undefined }) => {
   const { id } = useParams();
   const pathname = usePathname();
 
@@ -53,7 +53,7 @@ export const History = ({ user }: { user: User | undefined }) => {
     data: history,
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
+  } = useSWR<Array<Chat>>("/api/history", fetcher, {
     fallbackData: [],
   });
 
@@ -115,7 +115,7 @@ export const History = ({ user }: { user: User | undefined }) => {
 
           <div className="text-sm flex flex-row items-center justify-between">
             <div className="flex flex-row gap-2">
-              <div className="dark:text-zinc-300">History</div>
+              <div className="dark:text-zinc-300 font-medium">History</div>
 
               <div className="dark:text-zinc-400 text-zinc-500">
                 {history === undefined ? "loading" : history.length} chats
@@ -123,35 +123,27 @@ export const History = ({ user }: { user: User | undefined }) => {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col">
-            {user && (
-              <Button
-                className="font-normal text-sm flex flex-row justify-between text-white"
-                asChild
-              >
-                <Link href="/">
-                  <div>Start a new chat</div>
-                  <PencilEditIcon size={14} />
-                </Link>
-              </Button>
-            )}
+          <div className="mt-6 flex flex-col">
+            <Button
+              className="font-normal text-sm flex flex-row justify-between text-white"
+              asChild
+              onClick={() => setIsHistoryVisible(false)}
+            >
+              <Link href="/">
+                <div>Start a new chat</div>
+                <PencilEditIcon size={14} />
+              </Link>
+            </Button>
 
-            <div className="flex flex-col overflow-y-scroll p-1 h-[calc(100dvh-124px)]">
-              {!user ? (
-                <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
+            <div className="flex flex-col overflow-y-scroll p-1 h-[calc(100dvh-124px)] mt-4">
+              {!isLoading && history?.length === 0 ? (
+                <div className="text-zinc-500 h-64 w-full flex flex-row justify-center items-center text-sm gap-2">
                   <InfoIcon />
-                  <div>Login to save and revisit previous chats!</div>
+                  <div>No previous chats yet</div>
                 </div>
               ) : null}
 
-              {!isLoading && history?.length === 0 && user ? (
-                <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
-                  <InfoIcon />
-                  <div>No chats found</div>
-                </div>
-              ) : null}
-
-              {isLoading && user ? (
+              {isLoading ? (
                 <div className="flex flex-col">
                   {[44, 32, 28, 52].map((item) => (
                     <div key={item} className="p-2 my-[2px]">

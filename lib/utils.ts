@@ -27,18 +27,31 @@ export const fetcher = async (url: string) => {
       "An error occurred while fetching the data.",
     ) as ApplicationError;
 
-    error.info = await res.json();
+    try {
+      error.info = await res.json();
+    } catch {
+      error.info = (await res.text().catch(() => "")) || "Error";
+    }
     error.status = res.status;
 
     throw error;
   }
 
-  return res.json();
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export function getLocalStorage(key: string) {
   if (typeof window !== "undefined") {
-    return JSON.parse(localStorage.getItem(key) || "[]");
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : [];
+    } catch {
+      return [];
+    }
   }
   return [];
 }

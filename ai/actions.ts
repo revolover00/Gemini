@@ -85,17 +85,15 @@ export async function generateSampleSeatSelection({
     model: geminiFlashModel,
     prompt: `Simulate available seats for flight number ${flightNumber}, 6 seats on each row and 5 rows in total, adjust pricing based on location of seat`,
     output: "array",
-    schema: z.array(
-      z.object({
-        seatNumber: z.string().describe("Seat identifier, e.g., 12A, 15C"),
-        priceInUSD: z
-          .number()
-          .describe("Seat price in US dollars, less than $99"),
-        isAvailable: z
-          .boolean()
-          .describe("Whether the seat is available for booking"),
-      }),
-    ),
+    schema: z.object({
+      seatNumber: z.string().describe("Seat identifier, e.g., 12A, 15C"),
+      priceInUSD: z
+        .number()
+        .describe("Seat price in US dollars, less than $99"),
+      isAvailable: z
+        .boolean()
+        .describe("Whether the seat is available for booking"),
+    }),
   });
 
   return { seats: rows };

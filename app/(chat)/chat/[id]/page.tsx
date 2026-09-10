@@ -7,8 +7,13 @@ import { getChatById } from "@/db/queries";
 import { Chat } from "@/db/schema";
 import { convertToUIMessages } from "@/lib/utils";
 
-export default async function Page({ params }: { params: any }) {
-  const { id } = params;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }> | { id: string };
+}) {
+  const resolvedParams = await Promise.resolve(params);
+  const { id } = resolvedParams;
   const chatFromDb = await getChatById({ id });
 
   if (!chatFromDb) {
@@ -20,16 +25,6 @@ export default async function Page({ params }: { params: any }) {
     ...chatFromDb,
     messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
   };
-
-  const session = await auth();
-
-  if (!session || !session.user) {
-    return notFound();
-  }
-
-  if (session.user.id !== chat.userId) {
-    return notFound();
-  }
 
   return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
 }

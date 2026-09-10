@@ -19,8 +19,14 @@ import {
 import { generateUUID } from "@/lib/utils";
 
 export async function POST(request: Request) {
-  const { id, messages }: { id: string; messages: Array<Message> } =
-    await request.json();
+  let body: any = {};
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON payload", { status: 400 });
+  }
+
+  const { id, messages }: { id: string; messages: Array<Message> } = body || {};
 
   const session = await auth();
 
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const coreMessages = convertToCoreMessages(messages).filter(
+  const coreMessages = convertToCoreMessages(messages || []).filter(
     (message) => message.content.length > 0,
   );
 
