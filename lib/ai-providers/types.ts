@@ -5,6 +5,7 @@ export interface UserApiKey {
   keyName: string;
   apiKey: string;
   isDefault: boolean;
+  status?: "active" | "exhausted" | "invalid";
   createdAt: string;
   updatedAt: string;
 }

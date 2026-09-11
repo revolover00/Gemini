@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     tools: {
       getWeather: {
         description: "Get the current weather at a location",
-        parameters: z.object({
+        inputSchema: z.object({
           latitude: z.number().describe("Latitude coordinate"),
           longitude: z.number().describe("Longitude coordinate"),
         }),
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       },
       displayFlightStatus: {
         description: "Display the status of a flight",
-        parameters: z.object({
+        inputSchema: z.object({
           flightNumber: z.string().describe("Flight number"),
           date: z.string().describe("Date of the flight"),
         }),
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
       },
       searchFlights: {
         description: "Search for flights based on the given parameters",
-        parameters: z.object({
+        inputSchema: z.object({
           origin: z.string().describe("Origin airport or city"),
           destination: z.string().describe("Destination airport or city"),
         }),
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
       },
       selectSeats: {
         description: "Select seats for a flight",
-        parameters: z.object({
+        inputSchema: z.object({
           flightNumber: z.string().describe("Flight number"),
         }),
         execute: async ({ flightNumber }) => {
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
       },
       createReservation: {
         description: "Display pending reservation details",
-        parameters: z.object({
+        inputSchema: z.object({
           seats: z.string().array().describe("Array of selected seat numbers"),
           flightNumber: z.string().describe("Flight number"),
           departure: z.object({
@@ -230,7 +230,7 @@ export async function POST(request: Request) {
       authorizePayment: {
         description:
           "User will enter credentials to authorize payment, wait for user to repond when they are done",
-        parameters: z.object({
+        inputSchema: z.object({
           reservationId: z
             .string()
             .describe("Unique identifier for the reservation"),
@@ -241,7 +241,7 @@ export async function POST(request: Request) {
       },
       verifyPayment: {
         description: "Verify payment status",
-        parameters: z.object({
+        inputSchema: z.object({
           reservationId: z
             .string()
             .describe("Unique identifier for the reservation"),
@@ -258,7 +258,7 @@ export async function POST(request: Request) {
       },
       displayBoardingPass: {
         description: "Display a boarding pass",
-        parameters: z.object({
+        inputSchema: z.object({
           reservationId: z
             .string()
             .describe("Unique identifier for the reservation"),

@@ -339,9 +339,21 @@ export default function ApiKeysSettingsPage() {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">{item.keyName}</span>
+                        {item.status === "invalid" && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                            <AlertTriangle className="size-3" />
+                            مفتاح غير صالح
+                          </span>
+                        )}
+                        {item.status === "exhausted" && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                            <AlertTriangle className="size-3" />
+                            حصة مستنفدة
+                          </span>
+                        )}
                         {item.isDefault && (
                           <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-current" />
+                            <Star className="size-3 fill-current" />
                             الافتراضي
                           </span>
                         )}

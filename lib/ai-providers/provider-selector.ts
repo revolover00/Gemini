@@ -5,9 +5,12 @@ import {
   AIProvider,
   ModelType,
 } from "./provider-config";
+import { getStoredUserApiKeys, UserApiKey } from "./user-keys-storage";
 
 export const DEFAULT_PROVIDER_ID = "gemini";
 export const NO_API_KEY_ERROR = "NO_API_KEY";
+export const ALL_KEYS_EXHAUSTED_ERROR = "ALL_KEYS_EXHAUSTED";
+export const INVALID_KEY_ERROR = "INVALID_KEY";
 
 export interface GetActiveModelOptions {
   apiKey?: string;
@@ -29,6 +32,7 @@ export function getProvider(providerId: string = DEFAULT_PROVIDER_ID): AIProvide
 
   return provider;
 }
+
 
 /**
  * Returns the active LanguageModel instance for the given provider and model type,
@@ -54,9 +58,9 @@ export function getActiveModel(
     resolvedProviderId = optionsOrProvider;
   }
 
-  // Fallback to environment variable if apiKey not explicitly supplied in options
+  // Fallback to environment variable if DEV_TESTING_MODE is true
   if (!resolvedApiKey || resolvedApiKey.trim() === "") {
-    if (resolvedProviderId === "gemini") {
+    if (resolvedProviderId === "gemini" && process.env.DEV_TESTING_MODE === "true") {
       resolvedApiKey =
         process.env.GEMINI_API_KEY ||
         process.env.GOOGLE_GENERATIVE_AI_API_KEY ||

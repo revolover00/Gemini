@@ -50,6 +50,7 @@ export function saveUserApiKey(
         keyName: keyData.keyName,
         apiKey: keyData.apiKey,
         isDefault: Boolean(keyData.isDefault),
+        status: keyData.status || "active",
         createdAt: now,
         updatedAt: now,
       };
@@ -67,6 +68,7 @@ export function saveUserApiKey(
       keyName: keyData.keyName,
       apiKey: keyData.apiKey,
       isDefault: shouldBeDefault,
+      status: keyData.status || "active",
       createdAt: now,
       updatedAt: now,
     };
@@ -126,6 +128,25 @@ export function setDefaultApiKey(keyId: string): void {
   }
 }
 
+export function markKeyStatus(keyId: string, status: "active" | "exhausted" | "invalid"): void {
+  const currentKeys = getStoredUserApiKeys();
+  let found = false;
+
+  for (const k of currentKeys) {
+    if (k.id === keyId) {
+      k.status = status;
+      k.updatedAt = new Date().toISOString();
+      found = true;
+      break;
+    }
+  }
+
+  if (found && typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentKeys));
+    window.dispatchEvent(new Event("user_api_keys_changed"));
+  }
+}
+
 export function getDefaultApiKey(preferredProvider?: string): UserApiKey | null {
   const currentKeys = getStoredUserApiKeys();
   if (currentKeys.length === 0) return null;
@@ -144,4 +165,9 @@ export function getDefaultApiKey(preferredProvider?: string): UserApiKey | null 
   if (defaultKey) return defaultKey;
 
   return currentKeys[0] || null;
+}
+
+export function getNextAvailableKey(currentKeyId?: string): UserApiKey | null {
+  const currentKeys = getStoredUserApiKeys();
+  return currentKeys.find(k => k.status === 'active' && k.id !== currentKeyId) || null;
 }

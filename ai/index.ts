@@ -18,6 +18,7 @@ export {
   getAllProviders,
   getProvider,
   NO_API_KEY_ERROR,
+  
 } from "@/lib/ai-providers/provider-selector";
 
 export type { StoredKeysState, UserApiKey } from "@/lib/ai-providers/types";
@@ -27,5 +28,6 @@ export {
   getStoredUserApiKeys,
   saveUserApiKey,
   setDefaultApiKey,
+  markKeyStatus, getNextAvailableKey,
 } from "@/lib/ai-providers/user-keys-storage";
 
