@@ -1,7 +1,10 @@
+import { Key } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+
 import { auth } from "@/app/(auth)/auth";
+import { Button } from "@/components/ui/button";
 
 import { History } from "./history";
 import { SlashIcon } from "./icons";
@@ -34,9 +37,20 @@ export const Navbar = async () => {
       </div>
 
       <div className="flex items-center gap-2">
+        <Link href="/settings/api-keys">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs font-medium px-2.5"
+          >
+            <Key className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">إعدادات الـ API</span>
+          </Button>
+        </Link>
         <ThemeToggle />
       </div>
     </header>
   );
 };
+
 

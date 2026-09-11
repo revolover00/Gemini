@@ -1,23 +1,31 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { experimental_wrapLanguageModel as wrapLanguageModel } from "ai";
+export {
+  AI_PROVIDERS,
+  type AIProvider,
+  createGeminiFlashModel,
+  createGeminiProModel,
+  geminiFlashModel,
+  geminiProModel,
+  geminiProvider,
+  githubModelsProvider,
+  type ModelType,
+  openrouterProvider,
+  type ProviderModelInfo,
+} from "@/lib/ai-providers/provider-config";
 
-import { customMiddleware } from "./custom-middleware";
+export {
+  DEFAULT_PROVIDER_ID,
+  getActiveModel,
+  getAllProviders,
+  getProvider,
+  NO_API_KEY_ERROR,
+} from "@/lib/ai-providers/provider-selector";
 
-const apiKey =
-  process.env.GEMINI_API_KEY ||
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-  "";
+export type { StoredKeysState, UserApiKey } from "@/lib/ai-providers/types";
+export {
+  deleteUserApiKey,
+  getDefaultApiKey,
+  getStoredUserApiKeys,
+  saveUserApiKey,
+  setDefaultApiKey,
+} from "@/lib/ai-providers/user-keys-storage";
 
-const google = createGoogleGenerativeAI({
-  apiKey,
-});
-
-export const geminiProModel = wrapLanguageModel({
-  model: google("gemini-2.5-pro"),
-  middleware: customMiddleware,
-});
-
-export const geminiFlashModel = wrapLanguageModel({
-  model: google("gemini-2.5-flash"),
-  middleware: customMiddleware,
-});

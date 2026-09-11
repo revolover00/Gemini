@@ -1,3 +1,6 @@
-import { Experimental_LanguageModelV1Middleware } from "ai";
+import { wrapLanguageModel } from "ai";
 
-export const customMiddleware: Experimental_LanguageModelV1Middleware = {};
+export type CustomMiddleware = Parameters<typeof wrapLanguageModel>[0]["middleware"];
+
+export const customMiddleware: CustomMiddleware = {};
+

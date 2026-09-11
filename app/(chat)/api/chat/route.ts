@@ -1,7 +1,8 @@
-import { convertToCoreMessages, Message, streamText } from "ai";
+import { convertToCoreMessages, streamText, UIMessage as Message } from "ai";
 import { z } from "zod";
 
-import { geminiProModel } from "@/ai";
+
+import { getActiveModel, NO_API_KEY_ERROR } from "@/ai";
 import {
   generateReservationPrice,
   generateSampleFlightSearchResults,
@@ -26,7 +27,23 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON payload", { status: 400 });
   }
 
-  const { id, messages }: { id: string; messages: Array<Message> } = body || {};
+  const {
+    id,
+    messages,
+    apiKey,
+    provider,
+  }: {
+    id: string;
+    messages: Array<Message>;
+    apiKey?: string;
+    provider?: string;
+  } = body || {};
+
+  // Also check headers if not in body
+  const headerKey = request.headers.get("x-api-key") || undefined;
+  const headerProvider = request.headers.get("x-provider-id") || undefined;
+  const resolvedApiKey = apiKey || headerKey;
+  const resolvedProvider = provider || headerProvider;
 
   const session = await auth();
 
@@ -34,12 +51,56 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  let activeModel;
+  try {
+    activeModel = getActiveModel({
+      apiKey: resolvedApiKey,
+      preferredProvider: resolvedProvider,
+      modelType: "pro",
+    });
+  } catch (err: any) {
+    if (
+      err?.name === NO_API_KEY_ERROR ||
+      err?.message?.includes("NO_API_KEY") ||
+      err?.message?.includes("لازم تضيف مفتاح API")
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: NO_API_KEY_ERROR,
+          message: "لازم تضيف مفتاح API من الإعدادات الأول",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+    return new Response(
+      JSON.stringify({
+        error: "PROVIDER_ERROR",
+        message: err?.message || "فشل تهيئة المزود المحدد",
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
   const coreMessages = convertToCoreMessages(messages || []).filter(
-    (message) => Boolean(message?.content && (typeof message.content === "string" ? message.content.length > 0 : Array.isArray(message.content) ? message.content.length > 0 : true)),
+    (message) =>
+      Boolean(
+        message?.content &&
+          (typeof message.content === "string"
+            ? message.content.length > 0
+            : Array.isArray(message.content)
+              ? message.content.length > 0
+              : true),
+      ),
   );
 
   const result = await streamText({
-    model: geminiProModel,
+    model: activeModel,
     system: `\n
         - you help users book flights!
         - keep your responses limited to a sentence.
@@ -86,6 +147,7 @@ export async function POST(request: Request) {
           const flightStatus = await generateSampleFlightStatus({
             flightNumber,
             date,
+            apiKey: resolvedApiKey,
           });
 
           return flightStatus;
@@ -101,6 +163,7 @@ export async function POST(request: Request) {
           const results = await generateSampleFlightSearchResults({
             origin,
             destination,
+            apiKey: resolvedApiKey,
           });
 
           return results;
@@ -112,7 +175,10 @@ export async function POST(request: Request) {
           flightNumber: z.string().describe("Flight number"),
         }),
         execute: async ({ flightNumber }) => {
-          const seats = await generateSampleSeatSelection({ flightNumber });
+          const seats = await generateSampleSeatSelection({
+            flightNumber,
+            apiKey: resolvedApiKey,
+          });
           return seats;
         },
       },
@@ -138,7 +204,10 @@ export async function POST(request: Request) {
           passengerName: z.string().describe("Name of the passenger"),
         }),
         execute: async (props) => {
-          const { totalPriceInUSD } = await generateReservationPrice(props);
+          const { totalPriceInUSD } = await generateReservationPrice({
+            ...props,
+            apiKey: resolvedApiKey,
+          });
           const session = await auth();
 
           const id = generateUUID();

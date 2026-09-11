@@ -1,17 +1,31 @@
-import { generateObject } from "ai";
+import { generateObject, LanguageModel } from "ai";
 import { z } from "zod";
 
-import { geminiFlashModel } from ".";
+import { geminiFlashModel, getActiveModel } from ".";
+
+function resolveFlashModel(apiKey?: string): LanguageModel {
+
+  if (apiKey && apiKey.trim().length > 0) {
+    return getActiveModel({ apiKey, modelType: "flash" });
+  }
+  if (geminiFlashModel) {
+    return geminiFlashModel;
+  }
+  return getActiveModel({ modelType: "flash" });
+}
 
 export async function generateSampleFlightStatus({
   flightNumber,
   date,
+  apiKey,
 }: {
   flightNumber: string;
   date: string;
+  apiKey?: string;
 }) {
+  const model = resolveFlashModel(apiKey);
   const { object: flightStatus } = await generateObject({
-    model: geminiFlashModel,
+    model,
     prompt: `Flight status for flight number ${flightNumber} on ${date}`,
     schema: z.object({
       flightNumber: z.string().describe("Flight number, e.g., BA123, AA31"),
@@ -43,12 +57,15 @@ export async function generateSampleFlightStatus({
 export async function generateSampleFlightSearchResults({
   origin,
   destination,
+  apiKey,
 }: {
   origin: string;
   destination: string;
+  apiKey?: string;
 }) {
+  const model = resolveFlashModel(apiKey);
   const { object: flightSearchResults } = await generateObject({
-    model: geminiFlashModel,
+    model,
     prompt: `Generate search results for flights from ${origin} to ${destination}, limit to 4 results`,
     output: "array",
     schema: z.object({
@@ -78,11 +95,14 @@ export async function generateSampleFlightSearchResults({
 
 export async function generateSampleSeatSelection({
   flightNumber,
+  apiKey,
 }: {
   flightNumber: string;
+  apiKey?: string;
 }) {
+  const model = resolveFlashModel(apiKey);
   const { object: rows } = await generateObject({
-    model: geminiFlashModel,
+    model,
     prompt: `Simulate available seats for flight number ${flightNumber}, 6 seats on each row and 5 rows in total, adjust pricing based on location of seat`,
     output: "array",
     schema: z.object({
@@ -117,9 +137,11 @@ export async function generateReservationPrice(props: {
     terminal: string;
   };
   passengerName: string;
+  apiKey?: string;
 }) {
+  const model = resolveFlashModel(props.apiKey);
   const { object: reservation } = await generateObject({
-    model: geminiFlashModel,
+    model,
     prompt: `Generate price for the following reservation \n\n ${JSON.stringify(props, null, 2)}`,
     schema: z.object({
       totalPriceInUSD: z
@@ -130,3 +152,4 @@ export async function generateReservationPrice(props: {
 
   return reservation;
 }
+
