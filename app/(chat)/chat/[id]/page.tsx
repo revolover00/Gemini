@@ -7,13 +7,11 @@ import { getChatById } from "@/db/queries";
 import { Chat } from "@/db/schema";
 import { convertToUIMessages } from "@/lib/utils";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }> | { id: string };
+export default async function Page(props: {
+  params: Promise<{ id: string }>;
 }) {
-  const resolvedParams = await Promise.resolve(params);
-  const { id } = resolvedParams;
+  const params = await props.params;
+  const { id } = params;
   const chatFromDb = await getChatById({ id });
 
   if (!chatFromDb) {

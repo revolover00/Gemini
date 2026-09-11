@@ -160,9 +160,9 @@ export function MultimodalInput({
 
   return (
     <div className="relative w-full flex flex-col gap-4">
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
+      {(messages?.length ?? 0) === 0 &&
+        (attachments?.length ?? 0) === 0 &&
+        (uploadQueue?.length ?? 0) === 0 && (
           <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
@@ -201,7 +201,7 @@ export function MultimodalInput({
         tabIndex={-1}
       />
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
+      {((attachments?.length ?? 0) > 0 || (uploadQueue?.length ?? 0) > 0) && (
         <div className="flex flex-row gap-2 overflow-x-scroll">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
@@ -258,7 +258,7 @@ export function MultimodalInput({
             event.preventDefault();
             submitForm();
           }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
+          disabled={(input?.length ?? 0) === 0 || (uploadQueue?.length ?? 0) > 0}
         >
           <ArrowUpIcon size={14} />
         </Button>

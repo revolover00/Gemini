@@ -110,10 +110,10 @@ export function ListFlights({
               </div>
             </div>
             <div className="text w-fit hidden sm:flex text-sm text-muted-foreground flex-row gap-2">
-              <div>{flight.airlines.join(", ")}</div>
+              <div>{flight.airlines?.join(", ") || "Direct"}</div>
             </div>
             <div className="text sm:hidden text-xs sm:text-sm text-muted-foreground flex flex-row gap-2">
-              {flight.airlines.length} stops
+              {flight.airlines?.length ?? 0} stops
             </div>
           </div>
 

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   }
 
   const coreMessages = convertToCoreMessages(messages || []).filter(
-    (message) => message.content.length > 0,
+    (message) => Boolean(message?.content && (typeof message.content === "string" ? message.content.length > 0 : Array.isArray(message.content) ? message.content.length > 0 : true)),
   );
 
   const result = await streamText({

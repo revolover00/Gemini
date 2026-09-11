@@ -72,10 +72,11 @@ export const History = ({ user }: { user?: User | undefined }) => {
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
       success: () => {
-        mutate((history) => {
-          if (history) {
-            return history.filter((h) => h.id !== id);
+        mutate((currentHistory) => {
+          if (Array.isArray(currentHistory)) {
+            return currentHistory.filter((h) => h.id !== id);
           }
+          return [];
         });
         return "Chat deleted successfully";
       },
@@ -108,7 +109,7 @@ export const History = ({ user }: { user?: User | undefined }) => {
             <VisuallyHidden.Root>
               <SheetTitle className="text-left">History</SheetTitle>
               <SheetDescription className="text-left">
-                {history === undefined ? "loading" : history.length} chats
+                {isLoading || !Array.isArray(history) ? "loading" : `${history.length} chats`}
               </SheetDescription>
             </VisuallyHidden.Root>
           </SheetHeader>
@@ -118,7 +119,7 @@ export const History = ({ user }: { user?: User | undefined }) => {
               <div className="dark:text-zinc-300 font-medium">History</div>
 
               <div className="dark:text-zinc-400 text-zinc-500">
-                {history === undefined ? "loading" : history.length} chats
+                {isLoading || !Array.isArray(history) ? "loading" : `${history.length} chats`}
               </div>
             </div>
           </div>
@@ -136,7 +137,7 @@ export const History = ({ user }: { user?: User | undefined }) => {
             </Button>
 
             <div className="flex flex-col overflow-y-scroll p-1 h-[calc(100dvh-124px)] mt-4">
-              {!isLoading && history?.length === 0 ? (
+              {!isLoading && (!history || history.length === 0) ? (
                 <div className="text-zinc-500 h-64 w-full flex flex-row justify-center items-center text-sm gap-2">
                   <InfoIcon />
                   <div>No previous chats yet</div>
@@ -155,7 +156,7 @@ export const History = ({ user }: { user?: User | undefined }) => {
                 </div>
               ) : null}
 
-              {history &&
+              {Array.isArray(history) &&
                 history.map((chat) => (
                   <div
                     key={chat.id}
